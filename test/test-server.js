@@ -6,7 +6,6 @@ chai.use(chaiHttp);
 
 describe("Tree api", function(){
     it("should return my favourite tree", done=>{
-        console.log ("Deleting all data in db first.")
         chai.request(server)
             .get("/tree")
             .send({})
