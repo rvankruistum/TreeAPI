@@ -19,7 +19,7 @@ helm install --set image.id=sha256:7fb043ef1e95376a73e00fa437b60d3e423d6a6fdeaed
 
 ## CI/CD
 
-The application will automatically build, test and deploy to a temporary cluster using Github Actions on every push, and PR to the main branch.
+The application will automatically build, test and deploy to a temporary cluster using Github Actions on every push, and on any PR to the main branch.
 
 To run tests locally:
 ```

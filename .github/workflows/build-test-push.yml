@@ -37,7 +37,7 @@ jobs:
           type=semver,pattern={{major}}.{{minor}}
           type=semver,pattern={{major}}
           type=sha
-    - name: Build image and push GitHub Container Registry
+    - name: Build image and push to GitHub Container Registry
       id: build
       uses: docker/build-push-action@v3
       with:
