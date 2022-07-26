@@ -1,0 +1,65 @@
+name: Build-Test-Push
+
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Login to Github Packages
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GHCR_PAT }}
+    - uses: actions/checkout@v3
+    # Build & unit test code
+    - name: Build on Node.js 12
+      uses: actions/setup-node@v3
+      with:
+        node-version: 12
+    - run: npm ci
+    - run: npm test
+    # Build docker image and push to GHCR
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ghcr.io/rvankruistum/tree-api
+        tags: |
+          type=schedule
+          type=ref,event=branch
+          type=ref,event=pr
+          type=semver,pattern={{version}}
+          type=semver,pattern={{major}}.{{minor}}
+          type=semver,pattern={{major}}
+          type=sha
+    - name: Build image and push GitHub Container Registry
+      id: build
+      uses: docker/build-push-action@v3
+      with:
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        # build on feature branches, push only on main branch
+        push: ${{ github.ref == 'refs/heads/main' }}
+    # Start temporary k8s cluster and deploy new image
+    - name: Start minikube
+      id: minikube
+      uses: medyagh/setup-minikube@master
+    - uses: azure/setup-helm@v3      
+      id: install
+    - name: Install helm chart
+      run: helm install --set image.id=${{ steps.build.outputs.digest }} tree-api ./helm
+    - name: Wait for pods to be ready
+      run: |
+        kubectl get pods -n tree
+        kubectl wait --for=condition=Ready pods --all --timeout=60s -n tree || kubectl get pods -n tree
+    # Check if service is up
+    - name: Check if the service is deployed
+      run: |
+        minikube service list
+        minikube service tree-depl -n tree --url
+    

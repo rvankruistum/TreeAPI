@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: tree-depl
+  name: tree-depl
+  namespace: tree
+spec:
+  ports:
+  - name: http
+    nodePort: 30562
+    port: {{ .Values.service.port }}
+    protocol: TCP
+    targetPort: {{ .Values.service.port }}
+  selector:
+    app: tree-depl
+  type: {{ .Values.service.type }}

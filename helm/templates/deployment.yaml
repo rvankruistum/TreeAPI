@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: tree
+  name: tree-depl
+  namespace: tree
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: tree-depl
+  template:
+    metadata:
+      labels:
+        app: tree-depl
+    spec:
+      containers:
+      - image: "{{ .Values.image.repository }}@{{ .Values.image.id }}"
+        imagePullPolicy: Always
+        name: tree-api
+        resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi              
+            requests:
+              cpu: 100m
+              memory: 100Mi
